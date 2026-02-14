@@ -1,0 +1,344 @@
+<!-- src/renderer/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>HANNER - HAWK NETWORK SCANNER</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Master Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- COSMIC OVERLAY - Particle Background -->
+    <div class="cosmic-overlay"></div>
+    
+    <!-- MAIN APPLICATION CONTAINER -->
+    <div class="app-container">
+        
+        <!-- HEADER ZONE -->
+        <header class="header-zone">
+            <div class="title-block">
+                <h1 class="glitch-title" data-text="HANNER">HANNER</h1>
+                <div class="title-accent"></div>
+                <p class="subtitle">HAWK NETWORK SCANNER</p>
+            </div>
+            
+            <div class="status-block">
+                <div class="status-core">
+                    <div class="pulse-ring"></div>
+                    <div class="status-led" id="statusLed"></div>
+                    <span class="status-message" id="statusMessage">INITIALIZING</span>
+                </div>
+            </div>
+        </header>
+        
+        <!-- STATISTICS BAR -->
+        <div class="statistics-bar">
+            <div class="stat-item">
+                <div class="stat-icon"><i class="fas fa-globe"></i></div>
+                <div class="stat-content">
+                    <span class="stat-label">NETWORK</span>
+                    <span class="stat-value" id="networkStat">DETECTING</span>
+                </div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-icon"><i class="fas fa-server"></i></div>
+                <div class="stat-content">
+                    <span class="stat-label">HOSTS</span>
+                    <span class="stat-value" id="hostStat">0</span>
+                </div>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <div class="stat-icon"><i class="fas fa-door-open"></i></div>
+                <div class="stat-content">
+                    <span class="stat-label">OPEN PORTS</span>
+                    <span class="stat-value" id="portStat">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MAIN WORKSPACE -->
+        <div class="workspace">
+            
+            <!-- LEFT COLUMN - VISUALIZATION -->
+            <div class="visualization-column">
+                <div class="panel-header compact">
+                    <h2><i class="fas fa-project-diagram"></i> NETWORK MAP</h2>
+                    <div class="header-controls">
+                        <button class="icon-btn" id="resetViewBtn" title="Reset View">
+                            <i class="fas fa-crosshairs"></i>
+                        </button>
+                        <button class="icon-btn" id="fullscreenCanvas" title="Fullscreen">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- CANVAS CONTAINER -->
+                <div class="canvas-wrapper">
+                    <div class="canvas-container" id="canvasContainer">
+                        <canvas id="networkCanvas"></canvas>
+                    </div>
+                </div>
+                
+                <!-- QUICK ACTION BAR -->
+                <div class="quick-actions">
+                    <button class="action-btn primary" id="quickScanBtn">
+                        <i class="fas fa-bolt"></i> QUICK SCAN
+                    </button>
+                    <button class="action-btn" id="deepScanBtn">
+                        <i class="fas fa-rocket"></i> DEEP SCAN
+                    </button>
+                    <button class="action-btn" id="scanAllHostsBtn">
+                        <i class="fas fa-search"></i> SCAN ALL
+                    </button>
+                    <div class="action-spacer"></div>
+                    <div class="scan-indicator" id="scanIndicator">
+                        <div class="indicator-bar"></div>
+                        <span>IDLE</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- RIGHT COLUMN - DATA PANELS -->
+            <div class="data-column">
+                
+                <!-- TAB NAVIGATION -->
+                <div class="tab-nav">
+                    <button class="tab-btn active" data-tab="hosts">
+                        <i class="fas fa-laptop"></i>
+                        <span>HOSTS</span>
+                        <span class="tab-badge" id="hostsBadge">0</span>
+                    </button>
+                    <button class="tab-btn" data-tab="ports">
+                        <i class="fas fa-door-closed"></i>
+                        <span>PORTS</span>
+                        <span class="tab-badge" id="portsBadge">0</span>
+                    </button>
+                    <button class="tab-btn" data-tab="banner">
+                        <i class="fas fa-scroll"></i>
+                        <span>BANNERS</span>
+                    </button>
+                    <button class="tab-btn" data-tab="system">
+                        <i class="fas fa-cog"></i>
+                        <span>SYSTEM</span>
+                    </button>
+                </div>
+                
+                <!-- TAB CONTENT CONTAINER -->
+                <div class="tab-content-container">
+                    
+                    <!-- HOSTS TAB -->
+                    <div class="tab-pane active" id="hostsPane">
+                        <div class="pane-header">
+                            <div class="search-area">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="hostSearchInput" placeholder="Filter hosts..." autocomplete="off">
+                            </div>
+                            <div class="pane-actions">
+                                <button class="pane-btn" id="exportHostsBtn"><i class="fas fa-download"></i> CSV</button>
+                            </div>
+                        </div>
+                        
+                        <div class="data-table-container">
+                            <table class="cosmic-table" id="hostsTable">
+                                <thead>
+                                    <tr>
+                                        <th>IP ADDRESS</th>
+                                        <th>HOST</th>
+                                        <th>STATUS</th>
+                                        <th>PORTS</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hostsTableBody">
+                                    <tr class="empty-row">
+                                        <td colspan="5">SCANNING NETWORK...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- PORTS TAB -->
+                    <div class="tab-pane" id="portsPane">
+                        <div class="pane-header">
+                            <div class="port-target-group">
+                                <select id="hostSelector" class="cosmic-select">
+                                    <option value="">SELECT HOST</option>
+                                </select>
+                                <select id="portPresetSelect" class="cosmic-select">
+                                    <option value="quick">QUICK (TOP 100)</option>
+                                    <option value="common">COMMON (1-1024)</option>
+                                    <option value="full">FULL (1-65535)</option>
+                                    <option value="custom">CUSTOM</option>
+                                </select>
+                                <input type="text" id="customPortsInput" class="cosmic-input" placeholder="e.g., 80,443,8080" style="display: none;">
+                            </div>
+                            <button class="pane-btn primary" id="executePortScanBtn">
+                                <i class="fas fa-radar"></i> SCAN
+                            </button>
+                        </div>
+                        
+                        <div class="data-table-container">
+                            <table class="cosmic-table" id="portsTable">
+                                <thead>
+                                    <tr>
+                                        <th>PORT</th>
+                                        <th>SERVICE</th>
+                                        <th>STATE</th>
+                                        <th>BANNER</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="portsTableBody">
+                                    <tr class="empty-row">
+                                        <td colspan="5">NO PORTS SCANNED</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- BANNER TAB -->
+                    <div class="tab-pane" id="bannerPane">
+                        <div class="pane-header">
+                            <div class="port-target-group">
+                                <input type="text" id="bannerTargetInput" class="cosmic-input" placeholder="host:port (e.g., 192.168.1.1:80)">
+                                <button class="pane-btn" id="grabSingleBannerBtn">
+                                    <i class="fas fa-hand-paper"></i> GRAB
+                                </button>
+                            </div>
+                            <button class="pane-btn" id="grabAllBannersBtn">
+                                <i class="fas fa-layer-group"></i> GRAB ALL
+                            </button>
+                        </div>
+                        
+                        <div class="banner-container">
+                            <div class="banner-toolbar">
+                                <span class="banner-title"><i class="fas fa-scroll"></i> BANNER OUTPUT</span>
+                                <button class="icon-btn small" id="clearBannersBtn" title="Clear">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button class="icon-btn small" id="copyBannersBtn" title="Copy All">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <textarea id="bannerOutput" class="banner-output" readonly placeholder="BANNER OUTPUT WILL APPEAR HERE..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- SYSTEM TAB -->
+                    <div class="tab-pane" id="systemPane">
+                        <div class="system-grid">
+                            <div class="system-card">
+                                <div class="card-header">
+                                    <i class="fas fa-microchip"></i>
+                                    <h3>SYSTEM INFO</h3>
+                                </div>
+                                <div class="card-content">
+                                    <div class="info-row">
+                                        <span class="info-label">Platform:</span>
+                                        <span class="info-value" id="sysPlatformValue">Detecting...</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Architecture:</span>
+                                        <span class="info-value" id="sysArchValue">Detecting...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="system-card">
+                                <div class="card-header">
+                                    <i class="fas fa-shield-halored"></i>
+                                    <h3>SECURITY</h3>
+                                </div>
+                                <div class="card-content">
+                                    <div class="info-row">
+                                        <span class="info-label">Firewall:</span>
+                                        <span class="info-value status-active" id="firewallStatusValue">ACTIVE</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Stealth Mode:</span>
+                                        <span class="info-value status-inactive" id="stealthStatusValue">INACTIVE</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="system-card wide">
+                                <div class="card-header">
+                                    <i class="fas fa-clipboard-list"></i>
+                                    <h3>EVENT LOG</h3>
+                                    <button class="icon-btn small" id="clearLogBtn">
+                                        <i class="fas fa-eraser"></i>
+                                    </button>
+                                </div>
+                                <div class="log-container">
+                                    <div class="log-stream" id="eventLog">
+                                        <div class="log-entry">[INIT] HANNER ACTIVATED</div>
+                                        <div class="log-entry">[READY] AWAITING COMMAND</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- BOTTOM CONTROL BAR -->
+        <footer class="control-footer">
+            <div class="footer-left">
+                <button class="footer-btn" id="rescanNetworkBtn">
+                    <i class="fas fa-redo-alt"></i> RESCAN
+                </button>
+                <button class="footer-btn" id="exportAllDataBtn">
+                    <i class="fas fa-file-export"></i> EXPORT
+                </button>
+            </div>
+            
+            <div class="footer-center">
+                <div class="scan-progress-container" id="scanProgressContainer" style="display: none;">
+                    <span class="progress-label">SCANNING:</span>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="scanProgressFill"></div>
+                    </div>
+                    <span class="progress-percent" id="scanProgressPercent">0%</span>
+                </div>
+                <span class="footer-status" id="footerStatus">READY</span>
+            </div>
+            
+            <div class="footer-right">
+                <span class="version-tag">HANNER v1.0</span>
+                <button class="footer-btn danger" id="emergencyStopBtn">
+                    <i class="fas fa-stop-circle"></i> HALT
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- IP LIST PANEL (hidden by default) -->
+    <div class="ip-list-panel" id="ipListPanel">
+        <div class="ip-panel-header">
+            <h3><i class="fas fa-network-wired"></i> NETWORK INVENTORY</h3>
+            <button class="ip-panel-close" id="closeIpPanel">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="ip-panel-content" id="ipListContent">
+            <div class="loading-ips">Scanning network...</div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="enhanced-canvas.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
